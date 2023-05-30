@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func ConnectDb() {
+func ConnectDb() (*mongo.Client, error) {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
@@ -27,4 +27,5 @@ func ConnectDb() {
 			panic(err)
 		}
 	}()
+	return client, err
 }
