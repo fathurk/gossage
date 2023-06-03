@@ -9,6 +9,7 @@ import (
 var (
 	ErrorBodyFormat     = "Wrong body format"
 	ErrorInsertDocument = "Failed to insert document"
+	ErrorInvalidEmail   = "Invalid email format"
 )
 
 type GenericResponse struct {
