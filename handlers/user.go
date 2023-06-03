@@ -32,12 +32,10 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	client, err := utils.ConnectDb()
-	defer utils.DisconnectDb(client)
+	validateEmail := utils.ValidateEmail(requestBody.Email)
 
-	if err != nil {
-		Responser(c, 500, err.Error())
-		return
+	if !validateEmail {
+		Responser(c, 400, "Invalid email")
 	}
 
 	hashed, err := utils.HashPassword(requestBody.Password)
@@ -47,6 +45,14 @@ func CreateUser(c *gin.Context) {
 	}
 
 	now := time.Now()
+
+	client, err := utils.ConnectDb()
+	defer utils.DisconnectDb(client)
+
+	if err != nil {
+		Responser(c, 500, err.Error())
+		return
+	}
 
 	userPayload := &models.User{
 		ID:          primitive.NewObjectID(),
