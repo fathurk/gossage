@@ -69,5 +69,5 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	Responser(c, 201, "User with esuccessfully created")
+	Responser(c, 201, "User with email"+requestBody.Email+"has successfully created")
 }
