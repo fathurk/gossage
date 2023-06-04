@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type CreateUserRequestBody struct {
@@ -81,4 +82,37 @@ func CreateUser(c *gin.Context) {
 	}
 
 	Responser(c, 201, "User with email"+requestBody.Email+"has successfully created", nil)
+}
+
+func Finduser(c *gin.Context) {
+	email := c.Param("email")
+
+	if email == "" {
+		Responser(c, 400, ErrorInvalidEmail, nil)
+		return
+	}
+
+	client, err := utils.ConnectDb()
+
+	if err != nil {
+		Responser(c, 500, err.Error(), nil)
+		return
+	}
+
+	defer utils.DisconnectDb(client)
+
+	var result *models.User
+	err = client.Database("gossage").Collection("user").FindOne(context.TODO(), &FilterEmail{Email: email}).Decode(&result)
+
+	if err != nil {
+
+		if err == mongo.ErrNoDocuments {
+			Responser(c, 404, err.Error(), nil)
+			return
+		}
+
+		Responser(c, 500, err.Error(), nil)
+	}
+
+	Responser(c, 200, "User with email"+result.Email+"founded", result)
 }
