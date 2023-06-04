@@ -19,6 +19,10 @@ type CreateUserRequestBody struct {
 	Bio         string `json:"bio" `
 }
 
+type FilterEmail struct {
+	Email string `json:"email"`
+}
+
 var (
 	DefaultUserSettings = &models.UserSetting{OnlineStatus: "PUBLIC", ProfilePictureSeen: "PUBLIC", ChatByOther: "TRUE"}
 )
@@ -28,20 +32,20 @@ func CreateUser(c *gin.Context) {
 	var requestBody CreateUserRequestBody
 
 	if err := c.BindJSON(&requestBody); err != nil {
-		Responser(c, 400, err.Error())
+		Responser(c, 400, err.Error(), nil)
 		return
 	}
 
 	validateEmail := utils.ValidateEmail(requestBody.Email)
 
 	if !validateEmail {
-		Responser(c, 400, ErrorInvalidEmail)
+		Responser(c, 400, ErrorInvalidEmail, nil)
 	}
 
 	hashed, err := utils.HashPassword(requestBody.Password)
 
 	if err != nil {
-		Responser(c, 500, err.Error())
+		Responser(c, 500, err.Error(), nil)
 	}
 
 	now := time.Now()
@@ -49,7 +53,7 @@ func CreateUser(c *gin.Context) {
 	client, err := utils.ConnectDb()
 
 	if err != nil {
-		Responser(c, 500, err.Error())
+		Responser(c, 500, err.Error(), nil)
 		return
 	}
 
@@ -72,9 +76,9 @@ func CreateUser(c *gin.Context) {
 	fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
 
 	if err != nil {
-		Responser(c, 500, err.Error())
+		Responser(c, 500, err.Error(), nil)
 		return
 	}
 
-	Responser(c, 201, "User with email"+requestBody.Email+"has successfully created")
+	Responser(c, 201, "User with email"+requestBody.Email+"has successfully created", nil)
 }
