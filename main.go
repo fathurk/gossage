@@ -26,6 +26,7 @@ func main() {
 			user := v1.Group("/user")
 			{
 				user.POST("/create", handlers.CreateUser)
+				user.GET("/:email", handlers.Finduser)
 			}
 		}
 	}
