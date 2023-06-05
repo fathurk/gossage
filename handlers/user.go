@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type CreateUserRequestBody struct {
@@ -102,7 +104,13 @@ func Finduser(c *gin.Context) {
 	defer utils.DisconnectDb(client)
 
 	var result *models.User
-	err = client.Database("gossage").Collection("user").FindOne(context.TODO(), &FilterEmail{Email: email}).Decode(&result)
+
+	client.Database("gossage").Collection("user").Indexes().CreateOne(c, mongo.IndexModel{
+		Keys:    bson.D{{Key: "email", Value: 1}},
+		Options: options.Index().SetUnique(true),
+	})
+
+	err = client.Database("gossage").Collection("user").FindOne(c, &FilterEmail{Email: email}).Decode(&result)
 
 	if err != nil {
 
@@ -114,5 +122,5 @@ func Finduser(c *gin.Context) {
 		Responser(c, 500, err.Error(), nil)
 	}
 
-	Responser(c, 200, "User with email"+result.Email+"founded", result)
+	Responser(c, 200, "User with email "+result.Email+" founded", result)
 }
