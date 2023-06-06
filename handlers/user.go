@@ -60,6 +60,20 @@ func CreateUser(c *gin.Context) {
 
 	defer utils.DisconnectDb(client)
 
+	var findResult *models.User
+
+	err = client.Database("gossage").Collection("user").FindOne(context.TODO(), &FilterEmail{Email: requestBody.Email}).Decode(&findResult)
+
+	if len(findResult.Email) > 0 {
+		Responser(c, 400, ErrorHasBeenUsedEmail, nil)
+		return
+	}
+	if err != nil && err != mongo.ErrNoDocuments {
+		fmt.Println(err.Error())
+		Responser(c, 500, err.Error(), nil)
+		return
+	}
+
 	userPayload := &models.User{
 		ID:          primitive.NewObjectID(),
 		CreatedAt:   now,
@@ -74,14 +88,14 @@ func CreateUser(c *gin.Context) {
 
 	result, err := client.Database("gossage").Collection("user").InsertOne(context.TODO(), userPayload)
 
-	fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
-
 	if err != nil {
 		Responser(c, 500, err.Error(), nil)
 		return
 	}
 
-	Responser(c, 201, "User with email"+requestBody.Email+"has successfully created", nil)
+	fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
+
+	Responser(c, 201, "User with email "+requestBody.Email+" has successfully created", nil)
 }
 
 func Finduser(c *gin.Context) {
