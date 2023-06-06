@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -18,10 +19,6 @@ type CreateUserRequestBody struct {
 	PhoneNumber string `json:"phone_number" binding:"required,lte=15"`
 	Password    string `json:"password" binding:"required"`
 	Bio         string `json:"bio" `
-}
-
-type FilterEmail struct {
-	Email string `json:"email"`
 }
 
 var (
@@ -62,7 +59,8 @@ func CreateUser(c *gin.Context) {
 
 	var findResult *models.User
 
-	err = client.Database("gossage").Collection("user").FindOne(context.TODO(), &FilterEmail{Email: requestBody.Email}).Decode(&findResult)
+	filter := &bson.M{"email": requestBody.Email}
+	err = client.Database("gossage").Collection("user").FindOne(context.TODO(), filter).Decode(&findResult)
 
 	if len(findResult.Email) > 0 {
 		Responser(c, 400, ErrorHasBeenUsedEmail, nil)
@@ -117,7 +115,8 @@ func Finduser(c *gin.Context) {
 
 	var result *models.User
 
-	err = client.Database("gossage").Collection("user").FindOne(c, &FilterEmail{Email: email}).Decode(&result)
+	filter := &bson.M{"email": email}
+	err = client.Database("gossage").Collection("user").FindOne(c, filter).Decode(&result)
 
 	if err != nil {
 
