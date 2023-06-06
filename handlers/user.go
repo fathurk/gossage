@@ -21,6 +21,13 @@ type CreateUserRequestBody struct {
 	Bio         string `json:"bio" `
 }
 
+type FindUserResponse struct {
+	UserName       string `json:"user_name"`
+	Bio            string `json:"bio"`
+	Email          string `json:"email"`
+	ProfilePicture string `json:"profile_picture"`
+}
+
 var (
 	DefaultUserSettings = &models.UserSetting{OnlineStatus: models.SettingsPublic, ProfilePictureSeen: models.SettingsPublic, ChatByOther: models.SettingsPublic}
 )
@@ -129,5 +136,12 @@ func Finduser(c *gin.Context) {
 		Responser(c, 500, err.Error(), nil)
 	}
 
-	Responser(c, 200, "User with email "+result.Email+" founded", result)
+	response := &FindUserResponse{
+		UserName:       result.UserName,
+		Bio:            result.Bio,
+		Email:          result.Email,
+		ProfilePicture: result.ProfilePicture,
+	}
+
+	Responser(c, 200, "User with email "+result.Email+" founded", response)
 }
