@@ -28,6 +28,11 @@ import (
 // 	]
 // }
 
+var (
+	SettingsPublic  = "PUBLIC"
+	SettingsPrivate = "PRIVATE"
+)
+
 type Contact struct {
 	PhoneNumber    string `bson:"phone_number"`
 	ProfilePicture string `bson:"profile_picture"`

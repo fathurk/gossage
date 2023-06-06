@@ -22,7 +22,7 @@ type CreateUserRequestBody struct {
 }
 
 var (
-	DefaultUserSettings = &models.UserSetting{OnlineStatus: "PUBLIC", ProfilePictureSeen: "PUBLIC", ChatByOther: "TRUE"}
+	DefaultUserSettings = &models.UserSetting{OnlineStatus: models.SettingsPublic, ProfilePictureSeen: models.SettingsPublic, ChatByOther: models.SettingsPublic}
 )
 
 func CreateUser(c *gin.Context) {
@@ -59,16 +59,17 @@ func CreateUser(c *gin.Context) {
 
 	var findResult *models.User
 
-	filter := &bson.M{"email": requestBody.Email}
+	filter := bson.M{"email": requestBody.Email}
 	err = client.Database("gossage").Collection("user").FindOne(context.TODO(), filter).Decode(&findResult)
 
-	if len(findResult.Email) > 0 {
-		Responser(c, 400, ErrorHasBeenUsedEmail, nil)
-		return
-	}
 	if err != nil && err != mongo.ErrNoDocuments {
 		fmt.Println(err.Error())
 		Responser(c, 500, err.Error(), nil)
+		return
+	}
+
+	if err == nil {
+		Responser(c, 400, ErrorHasBeenUsedEmail, nil)
 		return
 	}
 
@@ -115,7 +116,7 @@ func Finduser(c *gin.Context) {
 
 	var result *models.User
 
-	filter := &bson.M{"email": email}
+	filter := &bson.M{"email": email, "user_setting.chat_by_other": models.SettingsPublic}
 	err = client.Database("gossage").Collection("user").FindOne(c, filter).Decode(&result)
 
 	if err != nil {
