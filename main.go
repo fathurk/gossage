@@ -28,6 +28,11 @@ func main() {
 				user.POST("/create", handlers.CreateUser)
 				user.GET("/:email", handlers.Finduser)
 			}
+
+			contact := v1.Group("/contact")
+			{
+				contact.POST("/add", handlers.AddContact)
+			}
 		}
 	}
 	s.ListenAndServe()
