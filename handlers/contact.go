@@ -8,7 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -43,6 +42,7 @@ func AddContact(c *gin.Context) {
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			fmt.Println(45)
 			Responser(c, 404, err.Error(), nil)
 			return
 		}
@@ -52,6 +52,8 @@ func AddContact(c *gin.Context) {
 
 	// Check are user target private or not
 	if findTarget.UserSetting.ChatByOther == models.SettingsPrivate {
+		fmt.Println(55)
+
 		Responser(c, 404, err.Error(), nil)
 		return
 	}
@@ -59,13 +61,15 @@ func AddContact(c *gin.Context) {
 	// Check user target are requester blocked or not
 	for _, contact := range findTarget.Contact {
 		if contact.Email == requestBody.EmailRequester && contact.IsBlocked {
+			fmt.Println(64)
+
 			Responser(c, 404, err.Error(), nil)
 			return
 		}
 	}
 
 	// Parse ID
-	objectId, err := primitive.ObjectIDFromHex(requestBody.IdRequester)
+	// objectId, err := primitive.ObjectIDFromHex(requestBody.IdRequester)
 
 	if err != nil {
 		Responser(c, 400, err.Error(), nil)
@@ -74,11 +78,13 @@ func AddContact(c *gin.Context) {
 
 	var findRequester *models.User
 
-	filterRequester := bson.M{"_id": objectId}
+	filterRequester := bson.M{"email": requestBody.EmailRequester}
 	err = client.Database("gossage").Collection("user").FindOne(context.TODO(), filterRequester).Decode(&findRequester)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			fmt.Println(86)
+
 			Responser(c, 404, err.Error(), nil)
 			return
 		}
@@ -86,7 +92,7 @@ func AddContact(c *gin.Context) {
 		return
 	}
 
-	for _, contact := range findTarget.Contact {
+	for _, contact := range findRequester.Contact {
 		if contact.Email == requestBody.EmailTarget {
 			Responser(c, 200, "Add contact successfully", nil)
 			return
@@ -99,7 +105,18 @@ func AddContact(c *gin.Context) {
 		IsBlocked:  false,
 	}
 
-	updatePayload := bson.M{
+	var updatePayload bson.M
+	if findRequester.Contact == nil {
+		newContactSlice := []models.Contact{{
+			Email:      requestBody.EmailTarget,
+			IsFavorite: false,
+			IsBlocked:  false,
+		}}
+
+		updatePayload = bson.M{
+			"contact": newContactSlice}
+	}
+	updatePayload = bson.M{
 		"$push": bson.M{"contact": newContact}}
 
 	result, err := client.Database("gossage").Collection("user").UpdateOne(context.TODO(), filterRequester, updatePayload)
