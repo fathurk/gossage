@@ -80,6 +80,8 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	emptySlice := []models.Contact{}
+
 	userPayload := &models.User{
 		ID:          primitive.NewObjectID(),
 		CreatedAt:   now,
@@ -90,6 +92,7 @@ func CreateUser(c *gin.Context) {
 		Password:    hashed,
 		Bio:         requestBody.Bio,
 		UserSetting: *DefaultUserSettings,
+		Contact:     emptySlice,
 	}
 
 	result, err := client.Database("gossage").Collection("user").InsertOne(context.TODO(), userPayload)
