@@ -10,6 +10,7 @@ var (
 	ErrorBodyFormat       = "Wrong body format"
 	ErrorInsertDocument   = "Failed to insert document"
 	ErrorInvalidEmail     = "Invalid email format"
+	ErrorInvalidId        = "Invalid id"
 	ErrorHasBeenUsedEmail = "Email has been used"
 )
 
